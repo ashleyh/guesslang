@@ -9,11 +9,16 @@ from features import *
 
 files = [("data/ruby/"+fn, "ruby") for fn in os.listdir("data/ruby")] + \
   [("data/c/"+fn, "c") for fn in os.listdir("data/c")] +  \
-  [("data/js/"+fn, "js") for fn in os.listdir("data/js")] + \
+  [("data/javascript/"+fn, "js") for fn in os.listdir("data/javascript")] + \
   [("data/php/"+fn, "php") for fn in os.listdir("data/php")] + \
+  [("data/perl/"+fn, "perl") for fn in os.listdir("data/perl")] + \
   [("data/csharp/"+fn, "csharp") for fn in os.listdir("data/csharp")] + \
+  [("data/go/"+fn, "go") for fn in os.listdir("data/go")] + \
+  [("data/haskell/"+fn, "haskell") for fn in os.listdir("data/haskell")] + \
   [("data/java/"+fn, "java") for fn in os.listdir("data/java")] + \
   [("data/cpp/"+fn, "cpp") for fn in os.listdir("data/cpp")] + \
+  [("data/scala/"+fn, "scala") for fn in os.listdir("data/scala")] + \
+  [("data/objc/"+fn, "objc") for fn in os.listdir("data/objc")] + \
   [("data/python/"+fn, "python") for fn in os.listdir("data/python")]
 
 featuresets = [(get_features(fn), g) for (fn,g) in files]
