@@ -7,7 +7,7 @@ import os
 import pickle
 from features import *
 
-langs = ['ruby', 'c', 'javascript', 'perl', 'csharp', 'go', 'haskell', 'java', 'cpp', 'scala', 'objc', 'python']
+langs = ['ruby', 'javascript', 'perl', 'csharp', 'haskell', 'java', 'cpp', 'scala', 'objc', 'python']
 
 featuresets = dict()
 testsets = dict()
@@ -19,6 +19,8 @@ for lang in langs:
   random.shuffle(featuresets[lang])
 
   print "Total " + lang + " featuresets: " + str(len(featuresets[lang]))
+
+rejig(featuresets)
 
 for (lang, featureset) in featuresets.items():
   total = len(featureset)

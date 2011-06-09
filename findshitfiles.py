@@ -5,7 +5,7 @@ import os
 import operator
 from features import *
 
-langs = ['c', 'ruby','javascript', 'perl', 'csharp', 'haskell', 'java', 'cpp', 'scala', 'objc', 'python']
+langs = ['ruby','javascript', 'perl', 'csharp', 'haskell', 'java', 'cpp', 'scala', 'objc', 'python']
 
 f = open("classifier.pickle", "r")
 classifier = pickle.load(f)

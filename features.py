@@ -6,8 +6,9 @@ def count_relative(search, txt, size):
 #  return float(len(re.findall(search,txt)))/float(size)
   if size == 0:
     return 0
-  return math.ceil(math.log10(((len(re.findall(search,txt))*1000)/size)+1))
-#  return len(re.findall(search,txt)) > 0
+  count = len(re.findall(search, txt))
+  return float(count)/float(size)
+  #  return len(re.findall(search,txt)) > 0
 
 def has(search, txt, size):
   if txt == 0:
@@ -18,31 +19,14 @@ def has(search, txt, size):
   else:
     return False
 
-def code_features(txt):
-  size = len(txt)
-  return {
-    'rel(->)': count_relative('->', txt, size),
-    'rel(< or >)': count_relative('[<>]', txt, size),
-    'rel(var)': count_relative('\bvar\b', txt, size),
-    'rel(def)': count_relative('\bdef\b', txt, size),
-    'rel(function)': count_relative('\bfunction\b', txt, size),
-    'rel(const)': count_relative('\bconst\b', txt, size),
-    'rel(&)': count_relative('&', txt, size),
-    'rel(())': count_relative('\\(\\)', txt, size),
-    'rel(;)': count_relative(';', txt, size),
-    'rel($)': count_relative('\\$', txt, size),
-    'rel(:)': count_relative(':', txt, size),
-    'rel(end)': count_relative('\bend\b', txt, size),
-    'rel({ or })': count_relative('[{}]', txt, size),
-    'rel([ or ])': count_relative('[\\[\\]]', txt, size),
-    'rel(*)': count_relative('\\*', txt, size),
-    'rel(class)': count_relative('\bclass\b', txt, size),
-    'rel(self)': count_relative('\bself\b', txt, size),
-    'rel(this)': count_relative('\bthis\b', txt, size),
-    'rel(,)': count_relative(',', txt, size),
-    'rel(|)': count_relative('|', txt, size),
-    'rel(<-)': count_relative('<-', txt, size),
+def crude_token_count(txt):
+  search = r'[\w\s]+|[^\w\s]+'
+  return len(re.findall(search, txt))  
 
+def code_features(txt):
+  size = crude_token_count(txt)
+  
+  features = {
     'has(<-)': has('<-', txt, size),
     'has(|)': has('|', txt, size),
     'has(nil)': has('\bnil\b', txt, size),
@@ -80,8 +64,19 @@ def code_features(txt):
     'has(use)': has('\\buse [A-Za-z0-9]\\b', txt, size),
     'has(<?php)': has('<?php\\b', txt, size),
     'has(/* or */)': has('(/\\*|\\*/)', txt, size),
-
   }
+
+
+  for rel in (r'''-> [<>] \bvar\b \bdef\b \bfunction\b 
+    \bconst\b & \( \) ; \$ : \bend\b [{}] [\[\]] \*
+    \bclass\b \bself\b \bthis\b , | <- \bpublic\b
+    \bprivate\b \bstatic\b \bvoid\b \bfor\b \beach\b
+    \byield\b \bjava\b \bscala\b \bSystem\b \bnew\b
+    \binterface\b @Override \bnamespace\b \bget\b \bset\b
+    \bextends\b \bimplements\b'''.split()):
+    features['rel(' + rel + ')'] = count_relative(rel, txt, size)
+  
+  return features
 
 
 def get_features(fn):
@@ -90,4 +85,36 @@ def get_features(fn):
   f.close()
 
   return code_features(txt)
+
+
+def rejig(lang_featuresets):
+  feature_names = set()
+  for featuresets in lang_featuresets.values():
+    for featureset, lang in featuresets:
+      for fname in featureset:
+        if fname.startswith('rel('):
+          feature_names.add(fname)
+      break # only need one as they're all the same
+  
+
+  
+  for fname in feature_names:
+    print 'rejigging', fname
+    all_values = [featureset[fname] for featureset, lang in featuresets \
+                    for featuresets in lang_featuresets.values()]
+    all_values.sort()
+    n = len(all_values)
+    lo = all_values[n/3]
+    hi = all_values[2*n/3]
+    for featuresets in lang_featuresets.values():
+      for featureset, lang in featuresets:
+        val = featureset[fname]
+        if val < lo:
+          val = -1
+        elif val > hi:
+          val = 0
+        else:
+          val = 1
+        featureset[fname] = val
+
 
