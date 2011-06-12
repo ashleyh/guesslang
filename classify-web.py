@@ -4,12 +4,13 @@ import sys
 from features import *
 import pickle
 import operator
+from classifier import Guesser
 
 app = Flask(__name__)
 
-f = open("classifier.pickle", "r")
-classifier = pickle.load(f)
-f.close()
+
+with open('guesser.pickle', 'r') as f:
+    guesser = pickle.load(f)
 
 
 
@@ -19,8 +20,8 @@ def hello():
   extra = ""
   if(request.form.has_key("code")):
     data = str(escape(request.form['code']))
-    features = code_features(request.form['code'])
-    probs = classifier.prob_classify(features)
+    source = request.form['code']
+    probs = guesser.prob_classify(source)
 
 
     probsd = dict()
@@ -37,14 +38,14 @@ def hello():
       extra += "<tr><td>" + k + "</td><td>" + '%.10f' % v + "</td></tr>"
     extra += "</table>"
     
-    extra += "<table>"
-    for (k,v) in features.items():
-      extra += "<tr><td>" + str(escape(k)) + "</td><td>" + str(v) + "</td></tr>"
+#    extra += "<table>"
+#    for (k,v) in features.items():
+#      extra += "<tr><td>" + str(escape(k)) + "</td><td>" + str(v) + "</td></tr>"
 
-    extra += "</table>"
+#    extra += "</table>"
 
 
   return "<form method=post><textarea name=code style='width:1000px;height:500px'>"+data+"</textarea><br><input type=submit></form>"+ extra
 
 if __name__ == "__main__":
-  app.run(debug=True)
+  app.run(debug=True, port=6789)

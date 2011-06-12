@@ -1,26 +1,26 @@
-import nltk
 import sys
-import pickle
+import cPickle as pickle
 import os
 import operator
-from features import *
+from collections import defaultdict
+from classifier import file_walker, Guesser
 
-langs = ['ruby','javascript', 'perl', 'csharp', 'haskell', 'java', 'cpp', 'scala', 'objc', 'python']
+with open('guesser.pickle', 'r') as f:
+    guesser = pickle.load(f)
 
-f = open("classifier.pickle", "r")
-classifier = pickle.load(f)
-f.close()
+lang_paths = defaultdict(list)
+for i, (lang, path) in enumerate(file_walker('data')):
+    if i % 100 == 0:
+        print i, 'files done'
+    with open(path, 'r') as f:
+        source = f.read()
+    prob = guesser.prob_classify(source).prob(lang)
+    lang_paths[lang].append((path, prob))
 
-for lang in langs:
-  filelist = os.listdir(os.path.join("data", lang))
-  featuresets = [(get_features(os.path.join("data", lang, fn)), fn) for fn in filelist]
-  fileprob = dict()
+for lang, paths in lang_paths.items():
+    print " == Worst", lang, "files == "
+    for path, prob in sorted(paths, key=operator.itemgetter(1))[:10]:
+        print path, ':', prob
 
-  for fs, fn in featuresets:
-    fileprob[fn] = classifier.prob_classify(fs).prob(lang)
+    
 
-  sortedworstfiles = sorted(fileprob.iteritems(), key=operator.itemgetter(1))[:10]
-
-  print " == Worst", lang, "files == "
-  for (k,v) in sortedworstfiles:
-    print k, ":", v

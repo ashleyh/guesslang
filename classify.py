@@ -1,20 +1,23 @@
 import pickle
 import nltk
 import sys
-from features import *
+from classifier import Guesser
 
-f = open("classifier.pickle", "r")
-classifier = pickle.load(f)
-f.close()
+with open('guesser.pickle', 'r') as f:
+    guesser = pickle.load(f)
 
-while 1:
-  name = sys.stdin.readline().strip()
-  if name == 'quit':
-    break
-  
-  try:
-    probs = classifier.prob_classify(get_features(name))
-    for label in probs.samples():
-      print label.rjust(10), '%.10f' % probs.prob(label)
-  except:
-    print "Error!"
+print 'type a path or ^D to quit'
+while True:
+    try:
+        name = raw_input('>')
+    except EOFError:
+        break
+
+    try:
+        with open(name, 'r') as f:
+           source = f.read()
+    except:
+        print 'error!'
+    else:
+        for prob, lang in guesser.guesses(source):
+            print lang.rjust(10), '%.10f' % prob
